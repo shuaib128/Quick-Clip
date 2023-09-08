@@ -1,0 +1,12 @@
+# Exclude video files
+*.mp4
+*.avi
+*.mkv
+*.mov
+*.flv
+*.wmv
+*.mpeg
+*.mpg
+
+# Exclude virtual environment directories
+venv/
