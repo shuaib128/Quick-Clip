@@ -10,7 +10,7 @@ cursor = conn.cursor()
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS intervals (
     id INTEGER PRIMARY KEY,
-    data BLOB
+    video_file_path TEXT NOT NULL
 )
 """)
 conn.commit()

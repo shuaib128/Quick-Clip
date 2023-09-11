@@ -1,4 +1,4 @@
-from record_screen import start_recording
+from Utils.record_screen import start_recording
 from increase_playback_speed import speed_up_on_the_fly
 from database import get_intervals
 
@@ -12,7 +12,7 @@ if __name__ == '__main__':
     print(retrieved_intervals)
 
     try:
-        # start_recording()
+        start_recording()
         speed_up_on_the_fly("final_output.mp4", retrieved_intervals, 2.0)
     except:
         print("some error")
