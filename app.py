@@ -1,3 +1,5 @@
+import os
+import sys
 import sys
 from PyQt5.QtWidgets import (
     QMainWindow, QApplication, QAction, QStackedWidget
@@ -5,15 +7,31 @@ from PyQt5.QtWidgets import (
 from App.Recorder.recorder_page import RecordPage
 from App.Videos.video_page import VideoPage
 from App.QuickClip.quickclip_page import QuickClipPage
+from Utils.hide_terminal import hide_terminal
+from Utils.is_bundled import is_bundled
+
+
+# Use the function at the start of your script
+# if is_bundled():
+#     hide_terminal()
 
 
 class App(QMainWindow):
+    folders = ["Videos", "Cliped", "Frames", "Audio"]
+
+    for folder_path in folders:
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+            print(f"Created folder: {folder_path}")
+        else:
+            print(f"Folder {folder_path} already exists.")
+
     def __init__(self):
         super().__init__()
         self.initUI()
 
     def initUI(self):
-        self.setWindowTitle("Navigation Example")
+        self.setWindowTitle("Quick Clip")
         self.setGeometry(0, 0, 800, 600)
         
         # Getting the center point of the screen

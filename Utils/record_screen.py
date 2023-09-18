@@ -1,6 +1,8 @@
 from screeninfo import get_monitors
 import pyautogui
-from Utils.database import store_intervals
+from Utils.database import (
+    store_video_data, get_last_video_data
+)
 import time
 import cv2
 import numpy as np
@@ -13,7 +15,7 @@ from Utils.combine_video_audio import combine_audio_video
 # Initialize recording state and file paths
 avi_filename = r"Frames\output.avi"
 audio_filename = r"Audio\audio_record.wav"
-final_video_filename = r"Videos\final_video.mp4"
+# final_video_filename = ""
 
 """
 Monitors audio input for speech activity and prints the status accordingly.
@@ -33,7 +35,7 @@ Raises:
 """
 
 
-def speech_detector():
+def speech_detector(final_video_filename):
     try:
         no_voice_start = None
         time_stamps_no_voice = []
@@ -75,7 +77,7 @@ def speech_detector():
                            for start, end in time_stamps_no_voice]
 
     # Store the interval data in database
-    store_intervals(formatted_intervals)
+    store_video_data(formatted_intervals, final_video_filename)
 
 
 """
@@ -150,6 +152,11 @@ def start_recording(stop_event, monitor_number, update_frame_signal):
     monitors = get_monitors()
     is_recording_audio = True
 
+    # Generate final filename for the final video
+    latest_video_info = get_last_video_data()
+    last_video_id = latest_video_info["id"] + 1 if len(latest_video_info) != 0 else 1
+    final_video_filename = f"Videos\\final_video_{last_video_id}.mp4"
+
     # Calculate the monitor height and width and also inicialize the FPS=20.0
     selected_monitor = monitors[monitor_number]
     screen_width = selected_monitor.width
@@ -166,7 +173,12 @@ def start_recording(stop_event, monitor_number, update_frame_signal):
 
     # Start audio recording & speech detector on a separate thread
     audio_thread = threading.Thread(target=record_audio)
-    speech_detector_thread = threading.Thread(target=speech_detector)
+    speech_detector_thread = threading.Thread(
+        target=speech_detector,
+        args=(
+            final_video_filename,
+        )
+    )
     audio_thread.start()
     speech_detector_thread.start()
     try:

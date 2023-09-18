@@ -1,12 +1,10 @@
 # Exclude video files
-*.mp4
-*.avi
-*.mkv
-*.mov
-*.flv
-*.wmv
-*.mpeg
-*.mpg
+Videos/
+Frames/
+Audio/
+Cliped/
+dist/
+build/
 
 # Exclude virtual environment directories
 venv/

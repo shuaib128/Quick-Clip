@@ -1,6 +1,5 @@
 from Utils.record_screen import start_recording
 from increase_playback_speed import speed_up_on_the_fly
-from database import get_intervals
 
 if __name__ == '__main__':
     # Retrieve intervals

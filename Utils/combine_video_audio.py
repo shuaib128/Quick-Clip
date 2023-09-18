@@ -1,6 +1,16 @@
+import os
 import re
 import subprocess
+import sys
 
+
+# Assuming this is in the root of your application
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if getattr(sys, 'frozen', False):
+    BASE_DIR = sys._MEIPASS  # Use this if running in the bundled app
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
+FFMPEG_PATH = os.path.join(BASE_DIR, 'FFMPEG', 'windows', 'ffmpeg.exe')
 
 def timestamp_to_seconds(timestamp):
     """
@@ -48,7 +58,7 @@ def get_video_duration(file_path):
     - str: The duration of the video in the format "HH:MM:SS.ss". 
            Returns None if the duration couldn't be extracted.
     """
-    cmd = ['ffmpeg', '-i', file_path]
+    cmd = [FFMPEG_PATH, '-i', file_path]
 
     # Run the command and get the stderr (where FFmpeg outputs the info)
     result = subprocess.run(cmd, stderr=subprocess.PIPE, text=True)
@@ -75,7 +85,7 @@ def get_audio_duration(file_path):
     - str: The duration of the audio in the format "HH:MM:SS.ss". 
            Returns None if the duration couldn't be extracted.
     """
-    cmd = ['ffmpeg', '-i', file_path]
+    cmd = [FFMPEG_PATH, '-i', file_path]
 
     # Run the command and get the stderr (where FFmpeg outputs the info)
     result = subprocess.run(cmd, stderr=subprocess.PIPE, text=True)
@@ -94,6 +104,7 @@ def get_audio_duration(file_path):
 
 
 def combine_audio_video(video_filename, audio_filename, output_filename):
+    print(FFMPEG_PATH)
     """
     Combine a video and audio file with an option to adjust the video speed based on the durations.
     The function will calculate the required adjustment to the video's speed to match the audio's duration.
@@ -118,7 +129,7 @@ def combine_audio_video(video_filename, audio_filename, output_filename):
 
     # Initialize the FFmpeg command with input video and audio files
     command = [
-        'ffmpeg',
+        FFMPEG_PATH,
         '-i', video_filename,  # Input video file
         '-i', audio_filename  # Input audio file
     ]
