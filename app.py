@@ -1,6 +1,5 @@
 import os
 import sys
-import sys
 from PyQt5.QtWidgets import (
     QMainWindow, QApplication, QAction, QStackedWidget
 )

@@ -7,10 +7,8 @@ import time
 import cv2
 import numpy as np
 import threading
-import sounddevice as sd
-from scipy.io.wavfile import write
 from Utils.speach_detect import is_speaker_in_use
-from Utils.combine_video_audio import combine_audio_video
+import subprocess
 
 # Initialize recording state and file paths
 avi_filename = r"Frames\output.avi"
@@ -33,8 +31,6 @@ Raises:
     KeyboardInterrupt: Allows the user to manually terminate the function's operation. Once interrupted,
                     it prints "Terminating...".
 """
-
-
 def speech_detector(final_video_filename):
     try:
         no_voice_start = None
@@ -80,109 +76,64 @@ def speech_detector(final_video_filename):
     store_video_data(formatted_intervals, final_video_filename)
 
 
-"""
-Records audio from the default microphone until the global variable 
-`is_recording_audio` is set to False. The audio is then written to 
-a file specified by the global variable `audio_filename`.
-
-Parameters:
-- None
-
-Returns:
-- None
-
-Raises:
-- RuntimeError: If there's an issue during audio streaming.
-- ValueError: If invalid arguments are provided to the InputStream or write function.
-- OSError: For issues related to microphone access or writing audio data to a file.
-- MemoryError: If too much memory is consumed during the recording process.
-- IOError: If there's an issue writing the audio data to a file.
-- NameError: If global variables or libraries aren't defined in the scope.
-
-Example:
-```python
-global is_recording_audio
-is_recording_audio = True
-record_audio()  # Starts recording
-# ... (after some time)
-is_recording_audio = False  # Stops recording and saves the audio file
-```
-
-Notes:
-- This function heavily relies on global variables for its behavior and output file location.
-- It's essential to set `is_recording_audio` to False when you want to stop recording.
-"""
-
-
-def record_audio():
-    try:
-        samplerate = 44100
-        audio_recording = []
-
-        with sd.InputStream(samplerate=samplerate, channels=2) as stream:
-            while is_recording_audio:
-                audio_chunk, _ = stream.read(samplerate)
-                audio_recording.append(audio_chunk)
-
-        audio_recording = np.concatenate(audio_recording, axis=0)
-        write(audio_filename, samplerate, audio_recording)
-
-    except RuntimeError as re:
-        print(f"Runtime error during streaming: {re}")
-    except ValueError as ve:
-        print(f"Value error: {ve}")
-    except OSError as e:
-        if "no default output device" in str(e) or e.errno == -9996:
-            print("Error: Invalid input device (no default output device)")
-        # This is an example, adjust as needed
-        elif "no default input device" in str(e):
-            print("Error: No microphone found!")
-        else:
-            print(f"OSError encountered: {e}")
-    except MemoryError:
-        print("Memory overflow!")
-    except IOError as ioe:
-        print(f"IO error while writing the audio file: {ioe}")
-    except NameError as ne:
-        print(f"Name error: {ne}")
-
-
+ffmpeg_process = None  # Define this at a global or appropriate scope
 def start_recording(stop_event, monitor_number, update_frame_signal):
     global is_recording_audio
+    global ffmpeg_process  # Add this line at the beginning of the function
     monitors = get_monitors()
     is_recording_audio = True
 
     # Generate final filename for the final video
     latest_video_info = get_last_video_data()
-    last_video_id = latest_video_info["id"] + 1 if len(latest_video_info) != 0 else 1
+    last_video_id = latest_video_info["id"] + \
+        1 if len(latest_video_info) != 0 else 1
     final_video_filename = f"Videos\\final_video_{last_video_id}.mp4"
 
-    # Calculate the monitor height and width and also inicialize the FPS=20.0
+    # Calculate the monitor height and width and also initialize the FPS=20.0
     selected_monitor = monitors[monitor_number]
     screen_width = selected_monitor.width
     screen_height = selected_monitor.height
     SCREEN_SIZE = (screen_width, screen_height)
-    fps = 20.0
+    fps = "20"
 
-    # Define the codec and create a VideoWriter object
-    fourcc = cv2.VideoWriter_fourcc(*"XVID")
-    out = cv2.VideoWriter(avi_filename, fourcc, fps, SCREEN_SIZE)
+    # Define cmd for FFmpeg
+    cmd = [
+        'ffmpeg',
+        '-f', 'gdigrab',
+        '-framerate', fps,
+        '-offset_x', str(selected_monitor.x),
+        '-offset_y', str(selected_monitor.y),
+        '-video_size', f"{SCREEN_SIZE[0]}x{SCREEN_SIZE[1]}",
+        '-i', 'desktop',
+        '-f', 'dshow',
+        '-rtbufsize', '100M',  # Increase the buffer size
+        '-i', 'audio=Microphone (UAC 1.0 Microphone & HID-Mediakey)',
+        '-c:v', 'libx264',
+        '-pix_fmt', 'yuv420p',
+        '-preset', 'ultrafast',
+        '-c:a', 'aac',
+        '-strict', 'experimental',
+        '-b:a', '192k',
+        '-movflags', '+faststart',  # Improve playback compatibility
+        '-threads', '0',
+        final_video_filename
+    ]
 
-    # Show that the recording has started.
+    # Start FFmpeg process:
+    ffmpeg_process = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+
     print("Recording... Press 'q' in the OpenCV window to stop.")
 
     # Start audio recording & speech detector on a separate thread
-    audio_thread = threading.Thread(target=record_audio)
     speech_detector_thread = threading.Thread(
         target=speech_detector,
         args=(
             final_video_filename,
         )
     )
-    audio_thread.start()
     speech_detector_thread.start()
-    try:
 
+    try:
         while True:
             # Screen capture from selected monitor
             img = pyautogui.screenshot(region=(
@@ -193,40 +144,27 @@ def start_recording(stop_event, monitor_number, update_frame_signal):
             ))
             frame = np.array(img)
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-            out.write(frame)
 
             # Emit the signal with the frame
             update_frame_signal.emit(frame)
 
-            # Check for 'q' key press in the OpenCV window
+            # Check for stop_event
             if stop_event.is_set():
                 print("Stopping recording...")
+
+                # Signal FFmpeg to terminate gracefully:
+                ffmpeg_process.stdin.write(b'q')
+                ffmpeg_process.stdin.flush()
+                ffmpeg_process.wait()  # Wait for FFmpeg to finish
+
+                # Stop the speech recording
+                is_recording_audio = False
+                speech_detector_thread.join()
+
                 break
 
-    except cv2.error as e:
-        print(f"OpenCV Error: {e}")
-    except pyautogui.FailSafeException:
-        print("PyAutoGUI Fail-Safe triggered!")
     except Exception as e:
         print(f"An error occurred: {e}")
 
     finally:
-        # Stop the audio recording thread
-        is_recording_audio = False
-        audio_thread.join()
-        speech_detector_thread.join()
-
-        # Close everything properly
-        out.release()
-        cv2.destroyAllWindows()
-
-        # Start the audio-video combination in a new thread
-        combine_thread = threading.Thread(
-            target=combine_audio_video,
-            args=(
-                avi_filename,
-                audio_filename,
-                final_video_filename
-            )
-        )
-        combine_thread.start()
+        pass

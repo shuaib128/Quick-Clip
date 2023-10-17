@@ -209,6 +209,7 @@ class QuickClipPage(QWidget):
             self.thumbnail_worker.terminate()
         self.thumbnail_worker.start()
 
+    # Click to delete the video file from the folder and the database.
     def delete_video(self, video_id, video_path):
         # First, let's remove the video from the QListWidget
         items = self.listWidget.findItems(os.path.basename(video_path), Qt.MatchExactly)
