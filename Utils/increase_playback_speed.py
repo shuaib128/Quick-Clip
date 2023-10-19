@@ -2,6 +2,21 @@ from moviepy.editor import VideoFileClip, concatenate_videoclips, vfx
 from Utils.database import store_cliped_video_data
 
 
+def add_seconds_to_time(timestring, seconds):
+    h, m, s = map(int, timestring.split(':'))
+    total_seconds = h * 3600 + m * 60 + s + seconds
+    h_new = total_seconds // 3600
+    m_new = (total_seconds % 3600) // 60
+    s_new = total_seconds % 60
+    return f"{h_new:02}:{m_new:02}:{s_new:02}"
+
+
+def time_difference(start_str, end_str):
+    start_seconds = time_to_seconds(start_str)
+    end_seconds = time_to_seconds(end_str)
+    return end_seconds - start_seconds
+
+
 def time_to_seconds(timestring):
     h, m, s = map(int, timestring.split(':'))
     return h * 3600 + m * 60 + s
@@ -12,7 +27,18 @@ def start_increase_timestamps(filename, video_path, timestamps):
     clips = []
     previous_end = 0
 
-    for start, end in timestamps:
+    adjusted_timestamps = []
+    for i, (start, end) in enumerate(timestamps):
+        if i < len(timestamps) - 1:  # If it's not the last pair
+            start = add_seconds_to_time(start, 3)
+        
+        if time_difference(start, end) >= 5:
+            adjusted_timestamps.append((start, end))
+
+    print(timestamps)
+    print(adjusted_timestamps)
+
+    for start, end in adjusted_timestamps:
         start_sec = time_to_seconds(start)
         end_sec = time_to_seconds(end)
 
