@@ -77,7 +77,8 @@ def speech_detector(final_video_filename):
 
 
 ffmpeg_process = None  # Define this at a global or appropriate scope
-def start_recording(stop_event, monitor_number, update_frame_signal):
+def start_recording(stop_event, monitor_number, microphone_name, update_frame_signal):
+    print(microphone_name)
     global is_recording_audio
     global ffmpeg_process  # Add this line at the beginning of the function
     monitors = get_monitors()
@@ -107,7 +108,7 @@ def start_recording(stop_event, monitor_number, update_frame_signal):
         '-i', 'desktop',
         '-f', 'dshow',
         '-rtbufsize', '100M',  # Increase the buffer size
-        '-i', 'audio=Microphone (UAC 1.0 Microphone & HID-Mediakey)',
+        '-i', f"audio={microphone_name}",
         '-c:v', 'libx264',
         '-pix_fmt', 'yuv420p',
         '-preset', 'ultrafast',

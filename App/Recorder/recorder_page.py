@@ -9,6 +9,7 @@ from PyQt5.QtGui import QImage, QPixmap
 import threading
 from screeninfo import get_monitors
 from Utils.record_screen import start_recording
+from Utils.audio_devices import list_audio_devices
 
 
 class RecordPage(QWidget):
@@ -22,6 +23,7 @@ class RecordPage(QWidget):
 
         self.stop_event = threading.Event()
         self.monitors = get_monitors()
+        self.devices = list_audio_devices()
 
         # Setting margins: left, top, right, bottom
         layout.setContentsMargins(25, 30, 25, 0)
@@ -38,13 +40,39 @@ class RecordPage(QWidget):
         # Add widgets to the layout
         layout.addWidget(self.combo)
 
-        # Default selection
+        # Default selection for monitor
         self.selected_monitor = 0
 
         # Update selected_monitor every time the
         # combo box selection changes
         self.combo.currentIndexChanged.connect(self.update_selected_monitor)
         self.update_selected_monitor()
+
+        # Add a gap (spacing) of 20 units
+        layout.addSpacing(20)
+
+        # Combo label for the microphone
+        label_microphone = QLabel("Select a Microphone (Default 0)")
+        layout.addWidget(label_microphone)
+
+        # Create a QComboBox for microphone
+        self.combo_microphone = QComboBox(self)
+        self.combo_microphone.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+        self.combo_microphone.setMinimumWidth(100)
+        self.combo_microphone.setFixedHeight(25)
+
+        for i, device in enumerate(self.devices, start=1):
+            self.combo_microphone.addItem(device)
+        # Add widgets to the layout
+        layout.addWidget(self.combo_microphone)
+
+        # Default selection for monitor
+        self.selected_microphone = self.devices[0]
+
+        # Update selected_monitor every time the
+        # combo box selection changes
+        self.combo_microphone.currentIndexChanged.connect(self.update_selected_mocrophone)
+        self.update_selected_mocrophone()
 
         # Add a gap (spacing) of 20 units
         layout.addSpacing(20)
@@ -97,6 +125,10 @@ class RecordPage(QWidget):
     def update_selected_monitor(self):
         self.selected_monitor = self.combo.currentIndex()
 
+    # Update the selected microphone based on the combo_microphone box index
+    def update_selected_mocrophone(self):
+        self.selected_microphone = self.combo_microphone.currentText()
+
     # Start recording thread
     def startScreenRecording(self):
         self.image_label.show()
@@ -108,6 +140,7 @@ class RecordPage(QWidget):
             args=(
                 self.stop_event,
                 self.selected_monitor,
+                self.selected_microphone,
                 self.update_frame_signal
             )
         )
