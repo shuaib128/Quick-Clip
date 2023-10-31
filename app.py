@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
 from App.Recorder.recorder_page import RecordPage
 from App.Videos.video_page import VideoPage
 from App.QuickClip.quickclip_page import QuickClipPage
+from App.FaceCamWidget.widget import CircularWidget
 from Utils.hide_terminal import hide_terminal
 from Utils.is_bundled import is_bundled
 
@@ -34,15 +35,20 @@ class App(QMainWindow):
         self.setGeometry(0, 0, 800, 600)
         
         # Getting the center point of the screen
-        screenGeometry = QApplication.desktop().screenGeometry()
-        centerX = int((screenGeometry.width() - self.width()) / 2)
-        centerY = int((screenGeometry.height() - self.height()) / 2)
+        # screenGeometry = QApplication.desktop().screenGeometry()
+        # centerX = int((screenGeometry.width() - self.width()) / 2)
+        # centerY = int((screenGeometry.height() - self.height()) / 2)
 
         # Move the window's upper-left point to the calculated position
-        self.move(centerX, centerY)
+        # self.move(centerX, centerY)
 
         self.createMenuBar()
         self.createPages()
+
+        # Make the circular webcam widget
+        self.circularWidget = CircularWidget(self)
+        # self.circularWidget.show()  # Show CircularWidget as a separate window
+        # self.show()
 
     def createMenuBar(self):
         menubar = self.menuBar()
