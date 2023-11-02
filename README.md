@@ -1,6 +1,12 @@
 # Quick Clip
 
-Quick Clip is a robust and user-friendly screen recording application, meticulously crafted using PyQt5. As a Teaching Assistant constantly in need of creating and sharing video lectures for my class, I found myself searching for a screen recording tool that goes beyond the basics. I needed a solution that was not only efficient in capturing high-quality screen content but also intelligent in enhancing the playback experience. This led to the inception of Quick Clip.
+Quick Clip is a user-friendly screen recording application that's designed to be helpful for teaching assistants like me. It has a unique feature where it can automatically detect moments in your recording when there is no speech. Afterward, it can fast forward through these silent sections. This means that when you record a lecture or presentation, Quick Clip will help you skip over the silent parts automatically, making your videos more efficient and enjoyable for your audience.
+
+![Sample Image](./doc/Images/Quick-clip.PNG)
+
+## Heres a small demo of Quick Clip in action
+[![Watch the video](https://www.youtube.com/watch?v=NRTDRID0RYQ)](https://www.youtube.com/watch?v=NRTDRID0RYQ)
+
 
 ## The Journey to Quick Clip
 
@@ -49,10 +55,6 @@ Ensure Python is installed on your system. Download and install it from [the off
 ## Support and Contribution
 
 Encounter any bumps along the way or have suggestions to make? Feel free to [open an issue](https://github.com/shuaib128/Quick-Clip/issues) or contribute to the project. Your feedback and contributions are highly valued.
-
-## License
-
-Quick Clip is made available under the MIT License. For more details, see the [LICENSE](https://github.com/shuaib128/Quick-Clip/blob/main/LICENSE) file.
 
 ---
 
