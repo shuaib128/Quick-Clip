@@ -5,7 +5,7 @@ Quick Clip is a user-friendly screen recording application that's designed to be
 ![Sample Image](./doc/Images/Quick-clip.PNG)
 
 ## Heres a small demo of Quick Clip in action
-[![Watch the video](https://www.youtube.com/watch?v=NRTDRID0RYQ)](https://www.youtube.com/watch?v=NRTDRID0RYQ)
+[![Watch the video](https://img.youtube.com/vi/NRTDRID0RYQ/0.jpg)](https://www.youtube.com/watch?v=NRTDRID0RYQ)
 
 
 ## The Journey to Quick Clip
@@ -51,6 +51,47 @@ Ensure Python is installed on your system. Download and install it from [the off
 
 3. **Enjoy Smart Playback**:  
    Replay your recordings, now enhanced with intelligent fast-forwarding through silent moments.
+
+
+# Quick Clip - Installation Guide
+
+This provides instructions on how to create an installable application for Quick Clip on Windows, Mac, and Linux using the provided `app.spec` file.
+
+## Prerequisites
+Ensure you have Python and PyInstaller installed on your system. You can install them using pip:
+
+```sh
+pip install pyinstaller
+```
+
+## Step 1: Modify the Spec File (Optional)
+The `app.spec` file is already provided in this repository. Open it in a text editor of your choice to make any necessary modifications according to your needs.
+
+## Step 2: Build the Application
+Navigate to the project's root directory in your terminal or command prompt and use PyInstaller to build the application.
+
+### For Windows:
+Run the following command:
+```
+pyinstaller --onefile app.spec
+```
+Your executable will be in the `dist` directory.
+
+### For Mac:
+Run the following command:
+```
+pyinstaller --onefile --windowed app.spec
+```
+Your executable will be in the `dist` directory.
+
+### For Linux:
+Run the following command:
+```
+pyinstaller --onefile app.spec
+```
+Your executable will be in the `dist` directory.
+
+
 
 ## Support and Contribution
 
